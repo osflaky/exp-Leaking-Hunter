@@ -1,0 +1,72 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: ubuntu-latest
+          arch: arm64
+          runner: ubuntu-24.04-arm
+          expander_leg: ubuntu-latest--arm64
+    name: Build & Verify [${{ matrix.expander_leg }}]
+    runs-on: ${{ matrix.runner }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+      # Some runner images (e.g. ubuntu-24.04-arm, windows-11-arm) do not ship
+      # a preinstalled Android SDK, so ANDROID_HOME is unset there. Install it
+      # explicitly on every leg so the Android library modules can configure.
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        packages: 'platform-tools'
+
+      # AGP downloads AAPT2 from Google's Maven repo, and Google only publishes
+      # an x86_64 Linux binary. On Linux arm64 hosts that binary cannot start
+      # ("AAPT2 ... Daemon startup failed"). Register qemu user-mode emulation
+      # and install the x86_64 runtime libraries it links against, so the
+      # AGP-matched AAPT2 runs transparently. This only provisions the host;
+      # the same build and tests run on every leg.
+    - name: Enable x86_64 emulation for AAPT2 (Linux arm64)
+      if: runner.os == 'Linux' && runner.arch == 'ARM64'
+      run: |
+        set -eux
+        sudo dpkg --add-architecture amd64
+        . /etc/os-release
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] http://archive.ubuntu.com/ubuntu ${VERSION_CODENAME} main" \
+          | sudo tee /etc/apt/sources.list.d/amd64-runtime.list
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] http://archive.ubuntu.com/ubuntu ${VERSION_CODENAME}-updates main" \
+          | sudo tee -a /etc/apt/sources.list.d/amd64-runtime.list
+        sudo apt-get update || true
+        sudo apt-get install -y --no-install-recommends \
+          qemu-user-static binfmt-support \
+          libc6:amd64 libstdc++6:amd64 zlib1g:amd64
+        sudo update-binfmts --enable qemu-x86_64 || true
+        ls -l /lib64/ld-linux-x86-64.so.2
+
+    - name: Set up Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        cache-read-only: ${{ github.ref != 'refs/heads/master' }}
+
+    - name: Validate Gradle wrapper
+      uses: gradle/actions/wrapper-validation@v3
+
+    - name: Assemble & test
+      run: ./gradlew assemble check --stacktrace
+    timeout-minutes: 150
