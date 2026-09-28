@@ -1,0 +1,15 @@
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+    compileOnly Libs.AGP_API
+    implementation Libs.asm
+    implementation Libs.asm_commons
+    implementation Libs.asm_tree
+    implementation Libs.asm_util
+    implementation project(':hunter-transform')
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}

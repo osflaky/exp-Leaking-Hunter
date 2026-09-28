@@ -1,0 +1,93 @@
+package com.quinn.hunter.plugin.linelog.bytecode;
+
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+
+public final class LinelogMethodAdapter extends MethodVisitor implements Opcodes {
+
+    private int lineNumber;
+
+    public LinelogMethodAdapter(MethodVisitor mv) {
+        super(Opcodes.ASM9, mv);
+    }
+
+    @Override
+    public void visitLineNumber(int line, Label start) {
+        this.lineNumber = line;
+        super.visitLineNumber(line, start);
+    }
+
+    @Override
+    public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+        if("android/util/Log".equals(owner)) {
+            String linenumberConst = lineNumber + "";
+            if("i".equals(name)) {
+                if("(Ljava/lang/String;Ljava/lang/String;)I".equals(desc)) {
+                    mv.visitLdcInsn(linenumberConst);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/hunter/library/linelog/LineNumberLog", "i", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I", false);
+                } else if("(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I".equals(desc)) {
+                    mv.visitLdcInsn(linenumberConst);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/hunter/library/linelog/LineNumberLog", "i", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;)I", false);
+                } else {
+                    super.visitMethodInsn(opcode, owner, name, desc, itf);
+                }
+            } else if("d".equals(name)) {
+                if("(Ljava/lang/String;Ljava/lang/String;)I".equals(desc)) {
+                    mv.visitLdcInsn(linenumberConst);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/hunter/library/linelog/LineNumberLog", "d", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I", false);
+                } else if("(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I".equals(desc)) {
+                    mv.visitLdcInsn(linenumberConst);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/hunter/library/linelog/LineNumberLog", "d", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;)I", false);
+                } else {
+                    super.visitMethodInsn(opcode, owner, name, desc, itf);
+                }
+            } else if("v".equals(name)) {
+                if("(Ljava/lang/String;Ljava/lang/String;)I".equals(desc)) {
+                    mv.visitLdcInsn(linenumberConst);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/hunter/library/linelog/LineNumberLog", "v", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I", false);
+                } else if("(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I".equals(desc)) {
+                    mv.visitLdcInsn(linenumberConst);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/hunter/library/linelog/LineNumberLog", "v", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;)I", false);
+                } else {
+                    super.visitMethodInsn(opcode, owner, name, desc, itf);
+                }
+            } else if("e".equals(name)) {
+                if("(Ljava/lang/String;Ljava/lang/String;)I".equals(desc)) {
+                    mv.visitLdcInsn(linenumberConst);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/hunter/library/linelog/LineNumberLog", "e", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I", false);
+                } else if("(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I".equals(desc)) {
+                    mv.visitLdcInsn(linenumberConst);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/hunter/library/linelog/LineNumberLog", "e", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;)I", false);
+                } else {
+                    super.visitMethodInsn(opcode, owner, name, desc, itf);
+                }
+            } else if("w".equals(name)) {
+                if("(Ljava/lang/String;Ljava/lang/String;)I".equals(desc)) {
+                    mv.visitLdcInsn(linenumberConst);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/hunter/library/linelog/LineNumberLog", "w", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I", false);
+                } else if("(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I".equals(desc)) {
+                    mv.visitLdcInsn(linenumberConst);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/hunter/library/linelog/LineNumberLog", "w", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;)I", false);
+                } else if("(Ljava/lang/String;Ljava/lang/Throwable;)I".equals(desc)) {
+                    mv.visitLdcInsn(linenumberConst);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/hunter/library/linelog/LineNumberLog", "w", "(Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;)I", false);
+                } else {
+                    super.visitMethodInsn(opcode, owner, name, desc, itf);
+                }
+            } else if("println".equals(name)) {
+                if("(ILjava/lang/String;Ljava/lang/String;)I".equals(desc)) {
+                    mv.visitLdcInsn(linenumberConst);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/hunter/library/linelog/LineNumberLog", "println", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)I", false);
+                } else {
+                    super.visitMethodInsn(opcode, owner, name, desc, itf);
+                }
+            } else {
+                super.visitMethodInsn(opcode, owner, name, desc, itf);
+            }
+        } else {
+            super.visitMethodInsn(opcode, owner, name, desc, itf);
+        }
+    }
+
+}
